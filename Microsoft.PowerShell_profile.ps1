@@ -1,6 +1,12 @@
 ## Final Line to set prompt
 ##oh-my-posh init pwsh | Invoke-Expression
 
+
+#Set keybinds.
+Set-PSReadLineKeyHandler -Key ctrl+p -Function HistorySearchBackward
+Set-PSReadLineKeyHandler -Key ctrl+n -Function HistorySearchForward
+Set-PSReadLineKeyHandler -Key ctrl+u -Function RevertLine
+
 function Install-Font() {
 
     Start-Process "choco install nerd-fonts-CascadiaCode" -Verb runAs
