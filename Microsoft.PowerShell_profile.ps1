@@ -1,7 +1,3 @@
-## Final Line to set prompt
-##oh-my-posh init pwsh | Invoke-Expression
-
-
 #Set keybinds.
 Set-PSReadLineKeyHandler -Key ctrl+p -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key ctrl+n -Function HistorySearchForward
