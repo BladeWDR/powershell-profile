@@ -34,15 +34,15 @@ function admin {
 }
 
 # A function to find directories using fzf. Requires fzf to be installed. choco install fzf
-$commondirs = @("$env:USERPROFILE\git", "$env:USERPROFILE\Documents", "F:\Syncthing")
+$commondirs = Get-Content -Path "$env:USERPROFILE\.ps-fzf" | ForEach-Object { $ExecutionContext.InvokeCommand.ExpandString($_) }
 
 function Find-Directories {
     if (!(Test-Path -PathType Leaf -Path "C:\ProgramData\chocolatey\bin\fzf.exe")){
         Write-Host -ForegroundColor Red "fzf is not installed."
         RETURN
     }
-    if([string]::isNullOrEmpty($commondirs)){
-        Write-Host -ForegroundColor Red "Your list of common directories is empty. Please add directories to the list."
+    if([string]::isNullOrEmpty("$commondirs")){
+        Write-Host -ForegroundColor Red "Your list of common directories is empty. Please add directories to the list by editing your commondirs environment variable."
         RETURN
     }
     foreach ($dir in $commondirs){
@@ -58,6 +58,35 @@ function Find-Directories {
         Set-Location -Path $result
     }
 }
+
+$repoPaths = @{
+    'PowershellProfile' = "$env:USERPROFILE\Documents\WindowsPowerShell"
+    'neovim' = "$env:LOCALAPPDATA\nvim"
+}
+
+function Update-GitRepos{
+    if($repoPaths.Count -eq 0 -or $null -eq $repoPaths.Count){
+        Write-Host "No repos specified. Not checking for updates."; RETURN
+    }
+    foreach ($path in $repoPaths.Keys){
+       $pathString = $repoPaths[$path]
+       if(!(Test-Path -PathType Container -Path $pathString)){
+          Write-Host "The path for $pathString does not exist. Skipping."  
+       }
+       else{
+           Invoke-Expression -Command "git -C $pathString fetch" *> $null
+           $gitStatus = Invoke-Expression -Command "git -C $pathString status -sb"
+           if($gitStatus -like "*behind*"){
+               Write-Host "Your $path repository is behind. Do a git pull to update."
+           }
+           elseif($gitStatus -like "*up to date*"){
+               Write-Host "Git repo is up to date."
+           }
+       }
+    }
+    }
+
+
 
 # Set UNIX-like aliases for the admin command, so sudo <command> will run the command
 # with elevated rights. 
@@ -75,3 +104,4 @@ if (Test-Path($ChocolateyProfile)) {
     Import-Module "$ChocolateyProfile"
 }
 
+Update-GitRepos
