@@ -6,6 +6,10 @@
 Set-PSReadLineKeyHandler -Key ctrl+p -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key ctrl+n -Function HistorySearchForward
 Set-PSReadLineKeyHandler -Key ctrl+u -Function RevertLine
+Set-PSReadLineKeyHandler -Key ctrl+d -ScriptBlock {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert('exit')
+    [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
 
 function Install-Font() {
 
@@ -142,6 +146,13 @@ Set-Alias -Name fd -Value Find-Directories
 $ChocolateyProfile = "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
 if (Test-Path($ChocolateyProfile)) {
     Import-Module "$ChocolateyProfile"
+}
+
+# Enhanced PowerShell Experience
+Set-PSReadLineOption -Colors @{
+    Command = 'Yellow'
+    Parameter = 'Green'
+    String = 'DarkCyan'
 }
 
 Update-GitRepos
