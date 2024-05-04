@@ -34,9 +34,19 @@ function admin {
 }
 
 # A function to find directories using fzf. Requires fzf to be installed. choco install fzf
-$commondirs = Get-Content -Path "$env:USERPROFILE\.ps-fzf" | ForEach-Object { $ExecutionContext.InvokeCommand.ExpandString($_) }
-
 function Find-Directories {
+    if ((Test-Path -PathType Leaf -Path "$env:USERPROFILE\.ps-fzf")){
+        $commondirs = Get-Content -Path "$env:USERPROFILE\.ps-fzf" | ForEach-Object { $ExecutionContext.InvokeCommand.ExpandString($_) }
+    }
+    else{
+        Write-Host "It seems that the configuration file does not exist. Would you like to create one?"
+        $choice = Read-Host "Y/N"
+        if(($choice -eq "Y")){
+            New-Item "$env:USERPROFILE\.ps-fzf" -Type File
+            Set-Content -Path $env:USERPROFILE\.ps-fzf -Value '$env:USERPROFILE\Documents' -Encoding UTF8
+        }
+        $commondirs = Get-Content -Path "$env:USERPROFILE\.ps-fzf" | ForEach-Object { $ExecutionContext.InvokeCommand.ExpandString($_) }
+    }
     if (!(Test-Path -PathType Leaf -Path "C:\ProgramData\chocolatey\bin\fzf.exe")){
         Write-Host -ForegroundColor Red "fzf is not installed."
         RETURN
