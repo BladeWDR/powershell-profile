@@ -33,10 +33,37 @@ function admin {
     }
 }
 
+# A function to find directories using fzf. Requires fzf to be installed. choco install fzf
+$commondirs = @("$env:USERPROFILE\git", "$env:USERPROFILE\Documents", "F:\Syncthing")
+
+function Find-Directories {
+    if (!(Test-Path -PathType Leaf -Path "C:\ProgramData\chocolatey\bin\fzf.exe")){
+        Write-Host -ForegroundColor Red "fzf is not installed."
+        RETURN
+    }
+    if([string]::isNullOrEmpty($commondirs)){
+        Write-Host -ForegroundColor Red "Your list of common directories is empty. Please add directories to the list."
+        RETURN
+    }
+    foreach ($dir in $commondirs){
+        if(!(Test-Path -PathType Container -Path $dir)){
+            $commondirs = $commondirs | Where-Object { $_ -ne $dir }
+            Write-Host -ForegroundColor Red "WARNING: The folder $dir does not exist."
+            Write-Host "Press any key to continue..."
+            $Host.UI.ReadLine()
+        }
+    }
+    $result = $(Get-ChildItem -Path $commondirs -directory | Select-Object -ExpandProperty FullName | fzf)
+    if(![string]::IsNullOrEmpty($result)){
+        Set-Location -Path $result
+    }
+}
+
 # Set UNIX-like aliases for the admin command, so sudo <command> will run the command
 # with elevated rights. 
 Set-Alias -Name su -Value admin
 Set-Alias -Name sudo -Value admin
+Set-Alias -Name fd -Value Find-Directories 
 
 #Import the Chocolatey Profile that contains the necessary code to enable
 #tab-completions to function for `choco`.
