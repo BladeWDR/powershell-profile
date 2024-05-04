@@ -89,14 +89,44 @@ function Update-GitRepos{
            if($gitStatus -like "*behind*"){
                Write-Host "Your $path repository is behind. Do a git pull to update."
            }
-           elseif($gitStatus -like "*up to date*"){
-               Write-Host "Git repo is up to date."
-           }
        }
     }
     }
 
+# Network Utilities
+function Get-PubIP { (Invoke-WebRequest http://ifconfig.me/ip).Content }
 
+# System Utilities
+function uptime {
+    if ($PSVersionTable.PSVersion.Major -eq 5) {
+        Get-WmiObject win32_operatingsystem | Select-Object @{Name='LastBootUpTime'; Expression={$_.ConverttoDateTime($_.lastbootuptime)}} | Format-Table -HideTableHeaders
+    } else {
+        net statistics workstation | Select-String "since" | ForEach-Object { $_.ToString().Replace('Statistics since ', '') }
+    }
+}
+
+function reload-profile {
+    & $profile
+}
+
+# Quick File Creation
+function touch { 
+    param($name) 
+    if(!(Test-Path -PathType Leaf -Path $name)){
+        New-Item -ItemType "file" -Path . -Name $name 
+    }
+    else{
+        [datetime]$date = (Get-Date)
+        Get-ChildItem -Path $name | ForEach-Object { $_.LastWriteTime = $date }
+    }
+}
+
+# Enhanced Listing
+function la { Get-ChildItem -Path . -Force | Format-Table -AutoSize }
+function ll { Get-ChildItem -Path . -Force -Hidden | Format-Table -AutoSize }
+
+# Networking Utilities
+function flushdns { Clear-DnsClientCache }
 
 # Set UNIX-like aliases for the admin command, so sudo <command> will run the command
 # with elevated rights. 
