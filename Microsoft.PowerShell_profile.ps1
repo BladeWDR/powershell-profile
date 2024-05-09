@@ -86,7 +86,6 @@ function Update-GitRepos{
           Write-Host "The path for $pathString does not exist. Skipping."  
        }
        else{
-           Write-Host "path is $pathString"
            & git -C $pathString fetch *> $null
            $gitStatus = & git -C $pathString status -sb
            if($gitStatus -like "*behind*"){
