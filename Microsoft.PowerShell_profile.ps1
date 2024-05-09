@@ -69,8 +69,10 @@ function Find-Directories {
     }
 }
 
+$documentsPath = [Environment]::GetFolderPath("MyDocuments")
+
 $repoPaths = @{
-    'PowershellProfile' = "$env:USERPROFILE\Documents\WindowsPowerShell"
+    'PowershellProfile' = "$documentsPath\WindowsPowerShell"
     'neovim' = "$env:LOCALAPPDATA\nvim"
 }
 
@@ -84,8 +86,9 @@ function Update-GitRepos{
           Write-Host "The path for $pathString does not exist. Skipping."  
        }
        else{
-           Invoke-Expression -Command "git -C $pathString fetch" *> $null
-           $gitStatus = Invoke-Expression -Command "git -C $pathString status -sb"
+           Write-Host "path is $pathString"
+           & git -C $pathString fetch *> $null
+           $gitStatus = & git -C $pathString status -sb
            if($gitStatus -like "*behind*"){
                Write-Host "Your $path repository is behind. Do a git pull to update."
            }
