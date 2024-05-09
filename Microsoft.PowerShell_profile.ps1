@@ -151,4 +151,11 @@ Set-PSReadLineOption -Colors @{
     String = 'DarkCyan'
 }
 
-Update-GitRepos
+$connectionStatus = Test-Connection -ComputerName "github.com" -Count 1 -Quiet
+
+if($connectionStatus){
+    Update-GitRepos
+}
+else{
+    Write-Host 'Connection could not be made to github.com'
+}
