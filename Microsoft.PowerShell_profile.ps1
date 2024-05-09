@@ -154,6 +154,7 @@ Set-PSReadLineOption -Colors @{
 $connectionStatus = Test-Connection -ComputerName "github.com" -Count 1 -Quiet
 
 if($connectionStatus){
+    Write-Host 'Checking for git repository updates...'
     Update-GitRepos
 }
 else{
