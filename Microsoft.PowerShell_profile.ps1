@@ -13,6 +13,10 @@ function Install-Font() {
 
 }
 
+function Install-Apps{
+    Start-Process -FilePath "powershell" -ArgumentList "$PSScriptRoot\Personal-Functions.ps1" -Verb RunAs
+}
+
 function grep($regex, $dir) {
     if ( $dir ) {
         Get-ChildItem $dir | select-string $regex
