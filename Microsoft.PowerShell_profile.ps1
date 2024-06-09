@@ -14,7 +14,7 @@ function Install-Font() {
 }
 
 function Install-Apps{
-    Start-Process -FilePath "powershell" -ArgumentList "$PSScriptRoot\Personal-Functions.ps1" -Verb RunAs
+    Start-Process -FilePath "powershell" -ArgumentList "$PSScriptRoot\Install.ps1" -Verb RunAs
 }
 
 function grep($regex, $dir) {

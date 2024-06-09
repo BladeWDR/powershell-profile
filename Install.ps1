@@ -21,7 +21,7 @@ if (!
 }
 
 # The list of apps to be installed by Chocolatey.
-$apps = @("lazygit", "starship")
+$apps = @("lazygit", "starship", "git", "neovim", "mingw", "make", "nodejs")
 
 # Test to see if choco is installed.
 if (-Not $(Get-Command choco)){
@@ -33,7 +33,6 @@ if (-Not $(Get-Command choco)){
 }
 
 choco install $apps
-Pause
 }
 
 Install-Apps
