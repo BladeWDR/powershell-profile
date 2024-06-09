@@ -162,3 +162,14 @@ if($connectionStatus){
 else{
     Write-Host 'Connection could not be made to github.com'
 }
+
+$ENV:STARSHIP_CONFIG = "$HOME\Documents\WindowsPowershell\starship.toml"
+$STARSHIP_PATH = $(Get-Command starship).Path
+
+if (Test-Path -Path "$STARSHIP_PATH"){
+    Invoke-Expression (&starship init powershell)
+}
+else{
+    Write-Host "Starship does not appear to be installed."
+    Write-Host "Not attempting to load something that doesn't exist."
+}
