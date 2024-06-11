@@ -168,11 +168,12 @@ else{
 }
 
 $ENV:STARSHIP_CONFIG = "$HOME\Documents\WindowsPowershell\starship.toml"
-$STARSHIP_PATH = $(Get-Command starship).Path
+$STARSHIP_PATH = "C:\Program Files\starship\bin"
 
 if (Test-Path -Path "$STARSHIP_PATH"){
     Invoke-Expression (&starship init powershell)
 }
+
 else{
     Write-Host "Starship does not appear to be installed."
     Write-Host "Not attempting to load something that doesn't exist."
