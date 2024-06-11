@@ -80,6 +80,18 @@ $repoPaths = @{
     'neovim' = "$env:LOCALAPPDATA\nvim"
 }
 
+function Fix-PS7 {
+    $ps7ProfilePath = "$documentsPath\Powershell\Microsoft.PowerShell_profile.ps1"
+
+    if ((Test-Path -Path $profile) -and (-Not (Test-Path -Path $ps7ProfilePath))) {
+    New-Item -Path $ps7ProfilePath -ItemType SymbolicLink -Value $PROFILE
+    }
+
+    else{
+        Write-host 'The symbolic link already exists!'
+    }
+}
+
 function Update-GitRepos{
     if($repoPaths.Count -eq 0 -or $null -eq $repoPaths.Count){
         Write-Host "No repos specified. Not checking for updates."; RETURN
