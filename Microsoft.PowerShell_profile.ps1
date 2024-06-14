@@ -80,36 +80,82 @@ $repoPaths = @{
     'neovim' = "$env:LOCALAPPDATA\nvim"
 }
 
-function Fix-PS7 {
-    $ps7ProfilePath = "$documentsPath\Powershell\Microsoft.PowerShell_profile.ps1"
-
-    if ((Test-Path -Path $profile) -and (-Not (Test-Path -Path $ps7ProfilePath))) {
-    New-Item -Path $ps7ProfilePath -ItemType SymbolicLink -Value $PROFILE
+function Invoke-PS7-Fix {
+    $scriptBlock = {
+        $documentsPath = [Environment]::GetFolderPath("MyDocuments")
+        $ps7ProfilePath = "$documentsPath\Powershell\Microsoft.PowerShell_profile.ps1"
+        if ((Test-Path -Path $profile) -and (-Not (Test-Path -Path $ps7ProfilePath))) {
+            write-output 'first if'
+            New-Item -Path $ps7ProfilePath -ItemType SymbolicLink -Value $profile
+            Read-host 'test'
+        }
+        elseif (-Not ((Get-ItemProperty -Path $ps7ProfilePath).PSIsContainer)) {
+            write-output 'second if'
+            Remove-Item -Path $ps7ProfilePath
+            New-Item -Path $ps7ProfilePath -ItemType SymbolicLink -Value $profile
+            Read-host 'test'
+        }
+        else {
+            Write-Output 'The symbolic link already exists!'
+            Read-host 'test'
+        }
+        Read-host 'test'
     }
-
-    else{
-        Write-host 'The symbolic link already exists!'
-    }
+    $scriptBlockString = $scriptBlock.ToString()
+    Start-Process -FilePath "$psHome\powershell.exe" -ArgumentList "-Command & $scriptBlockString" -Verb RunAs -Wait
 }
 
+# function Fix-PS7 {
+#     $ps7ProfilePath = "$documentsPath\Powershell\Microsoft.PowerShell_profile.ps1"
+#     if ((Test-Path -Path $profile) -and (-Not (Test-Path -Path $ps7ProfilePath))) {
+#     New-Item -Path $ps7ProfilePath -ItemType SymbolicLink -Value $PROFILE -Verb Runas
+#     }
+#     elseif(-Not ((Get-ItemProperty -Path $ps7ProfilePath).LinkType)){
+#         Remove-Item -Path $ps7ProfilePath
+#         New-Item -Path $ps7ProfilePath -ItemType SymbolicLink -Value $PROFILE -Verb Runas
+#     }
+#     else{
+#         Write-host 'The symbolic link already exists!'
+#     }
+# }
+
 function Update-GitRepos{
+
+
     if($repoPaths.Count -eq 0 -or $null -eq $repoPaths.Count){
         Write-Host "No repos specified. Not checking for updates."; RETURN
     }
-    foreach ($path in $repoPaths.Keys){
-       $pathString = $repoPaths[$path]
-       if(!(Test-Path -PathType Container -Path $pathString)){
-          Write-Host "The path for $pathString does not exist. Skipping."  
-       }
-       else{
-           & git -C $pathString fetch *> $null
-           $gitStatus = & git -C $pathString status -sb
-           if($gitStatus -like "*behind*"){
-               Write-Host "Your $path repository is behind. Do a git pull to update."
-           }
-       }
+
+    if (-Not (Test-Path -Path $documentsPath\lastupdate)){
+        $lastCheck = $null
     }
+    else{
+        $lastCheck = Get-Content -path "$documentsPath\lastupdate"
     }
+    $currentTime = Get-Date
+
+        if (($lastCheck -eq $null) -or ($currentTime -ge ([DateTime]::Parse($lastCheck).AddHours(12)))) {
+
+            Write-Output 'Running daily update check...'
+            Start-Sleep 1
+            Clear-Host
+
+            foreach ($path in $repoPaths.Keys){
+                $pathString = $repoPaths[$path]
+                    if(!(Test-Path -PathType Container -Path $pathString)){
+                        Write-Host "The path for $pathString does not exist. Skipping."  
+                    }
+                    else{
+                        & git -C $pathString fetch *> $null
+                            $gitStatus = & git -C $pathString status -sb
+                            if($gitStatus -like "*behind*"){
+                                Write-Host "Your $path repository is behind. Do a git pull to update."
+                            }
+                    }
+            }
+        }
+        $currentTime.ToString('yyyy-MM-ddTHH:mm:ss') | Set-Content -Path "$documentsPath\lastupdate"
+}
 
 # Network Utilities
 function Get-PubIP { (Invoke-WebRequest http://ifconfig.me/ip).Content }
@@ -172,7 +218,6 @@ Set-PSReadLineOption -Colors @{
 $connectionStatus = Test-Connection -ComputerName "github.com" -Count 1 -Quiet
 
 if($connectionStatus){
-    Write-Host 'Checking for git repository updates...'
     Update-GitRepos
 }
 else{
