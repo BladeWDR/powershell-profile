@@ -1,3 +1,5 @@
+# Set environment variables
+$NVIM = "$env:LOCALAPPDATA\nvim"
 #Set keybinds.
 Set-PSReadLineKeyHandler -Key ctrl+p -Function HistorySearchBackward
 Set-PSReadLineKeyHandler -Key ctrl+n -Function HistorySearchForward
