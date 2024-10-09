@@ -9,6 +9,48 @@ Set-PSReadLineKeyHandler -Key ctrl+d -ScriptBlock {
     [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
 }
 
+# only set this keybind if fzf is actually installed.
+# avoid unncessarily overriding the existing binding of ctrl-r unless we have something to replace it with.
+if (Get-Command fzf -ErrorAction SilentlyContinue) {
+    Set-PSReadLineKeyHandler -Key ctrl+r -ScriptBlock {
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert('fzf-history')
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
+}
+
+function Find-History-Fzf {
+    # Get PowerShell history from the history file
+    $history = Get-Content $((Get-PSReadLineOption).HistorySavePath)
+    # Remove duplicate entries and empty lines
+    $uniqueHistory = $history | Where-Object { $_ -ne '' } | Select-Object -Unique
+
+    # Call fzf for fuzzy searching
+    $selected = $uniqueHistory | Out-String | fzf --height 40% --border --layout=reverse --info=inline --bind="ctrl-r:toggle-sort"
+
+    if (-not $selected) {
+        Write-Host "No selection made or fzf exited."
+        return
+    }
+
+    # Clear the current line
+    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+
+    # Insert the selected command into the current input buffer
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($selected.Trim())
+
+    # Move the cursor to the end of the line
+    [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
+
+    # Execute the inserted command immediately
+    $commandToExecute = $selected.Trim()
+    Invoke-Expression $commandToExecute
+
+    # Accept the selection.
+    #[Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
+
+Set-Alias fzf-history Find-History-Fzf
+
 function Install-Font() {
 
     Start-Process "choco install nerd-fonts-CascadiaCode" -Verb runAs
@@ -140,7 +182,7 @@ function Update-GitRepos{
 
             Write-Output 'Running daily update check...'
             Start-Sleep 1
-            Clear-Host
+            #Clear-Host
 
             foreach ($path in $repoPaths.Keys){
                 $pathString = $repoPaths[$path]
