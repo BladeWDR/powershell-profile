@@ -10,12 +10,15 @@ Set-PSReadLineKeyHandler -Key ctrl+d -ScriptBlock {
 }
 
 # only set this keybind if fzf is actually installed.
-# avoid unncessarily overriding the existing binding of ctrl-r unless we have something to replace it with.
+# avoid unnecessarily overriding the existing binding of ctrl-r unless we have something to replace it with.
 if (Get-Command fzf -ErrorAction SilentlyContinue) {
     Set-PSReadLineKeyHandler -Key ctrl+r -ScriptBlock {
-        [Microsoft.PowerShell.PSConsoleReadLine]::Insert('fzf-history')
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-}
+        $result = $(Find-History-Fzf)
+        if ($result) {
+            [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+            [Microsoft.PowerShell.PSConsoleReadLine]::Insert($result)
+        }
+    }
 }
 
 function Find-History-Fzf {
@@ -23,33 +26,15 @@ function Find-History-Fzf {
     $history = Get-Content $((Get-PSReadLineOption).HistorySavePath)
     # Remove duplicate entries and empty lines
     $uniqueHistory = $history | Where-Object { $_ -ne '' } | Select-Object -Unique
-
     # Call fzf for fuzzy searching
     $selected = $uniqueHistory | Out-String | fzf --height 40% --border --layout=reverse --info=inline --bind="ctrl-r:toggle-sort"
-
     if (-not $selected) {
         Write-Host "No selection made or fzf exited."
-        return
+        break
     }
-
-    # Clear the current line
-    [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-
-    # Insert the selected command into the current input buffer
-    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($selected.Trim())
-
-    # Move the cursor to the end of the line
-    [Microsoft.PowerShell.PSConsoleReadLine]::EndOfLine()
-
-    # Execute the inserted command immediately
-    $commandToExecute = $selected.Trim()
-    Invoke-Expression $commandToExecute
-
-    # Accept the selection.
-    #[Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    # Return the selected command (trimmed)
+    return $selected.Trim()
 }
-
-Set-Alias fzf-history Find-History-Fzf
 
 function Install-Font() {
 
