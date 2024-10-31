@@ -255,6 +255,7 @@ else{
 
 $ENV:STARSHIP_CONFIG = "$HOME\Documents\WindowsPowershell\starship.toml"
 $STARSHIP_PATH = "C:\Program Files\starship\bin"
+$ZOXIDE_PATH = "C:\ProgramData\chocolatey\bin\zoxide.exe"
 
 if (Test-Path -Path "$STARSHIP_PATH"){
     Invoke-Expression (&starship init powershell)
@@ -263,4 +264,8 @@ if (Test-Path -Path "$STARSHIP_PATH"){
 else{
     Write-Host "Starship does not appear to be installed."
     Write-Host "Not attempting to load something that doesn't exist."
+}
+
+if (Test-Path -Path "$ZOXIDE_PATH"){
+    Invoke-Expression (& { (zoxide init powershell --cmd cd | Out-String) })
 }
