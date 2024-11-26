@@ -226,6 +226,7 @@ function flushdns { Clear-DnsClientCache }
 Set-Alias -Name su -Value admin
 Set-Alias -Name sudo -Value admin
 Set-Alias -Name fd -Value Find-Directories 
+Set-Alias -Name v -Value nvim
 
 #Import the Chocolatey Profile that contains the necessary code to enable
 #tab-completions to function for `choco`.
