@@ -246,16 +246,7 @@ Set-PSReadLineOption -Colors @{
     String = 'DarkCyan'
 }
 
-$connectionStatus = Test-Connection -ComputerName "github.com" -Count 1 -Quiet
-
-if($connectionStatus){
-    Update-GitRepos
-}
-else{
-    Write-Host 'Connection could not be made to github.com'
-}
-
-$ENV:STARSHIP_CONFIG = "$HOME\Documents\WindowsPowershell\starship.toml"
+$ENV:STARSHIP_CONFIG = "$documentsPath\WindowsPowershell\starship.toml"
 $STARSHIP_PATH = "C:\Program Files\starship\bin"
 $ZOXIDE_PATH = "C:\ProgramData\chocolatey\bin\zoxide.exe"
 
