@@ -270,7 +270,7 @@ Set-Alias -Name sudo -Value admin
 Set-Alias -Name fd -Value Find-Directories 
 Set-Alias -Name v -Value nvim
 Set-Alias -Name lg -Value lazygit
-Set-Alias -Name ls -Value eza
+Set-Alias -Name ls -Value eza -Option AllScope
 
 #Import the Chocolatey Profile that contains the necessary code to enable
 #tab-completions to function for `choco`.
